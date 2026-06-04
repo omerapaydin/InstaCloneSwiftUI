@@ -8,16 +8,17 @@
 import SwiftUI
 import Firebase
 import FirebaseAuth
+import FirebaseFirestore
 
 struct RegisterView: View {
-    
+    @Environment(\.dismiss) var dismiss
     var goLogin: () -> Void
 
-    @State private var name = ""
+    @State private var username = ""
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
-    
+    let db = Firestore.firestore()
     var body: some View {
         ZStack {
 
@@ -46,14 +47,49 @@ struct RegisterView: View {
 
                 VStack(spacing: 15) {
 
-                    input(icon: "person", placeholder: "Ad Soyad", text: $name)
+                    input(icon: "person", placeholder: "Kullanıcı Adı", text: $username)
                     input(icon: "envelope", placeholder: "E-Mail", text: $email)
                     input(icon: "lock", placeholder: "Şifre", text: $password, isSecure: true)
                     input(icon: "lock.rotation", placeholder: "Şifre Tekrar", text: $confirmPassword, isSecure: true)
 
                     Button {
+
+                        guard password == confirmPassword else {
+                            print("Şifreler uyuşmuyor")
+                            return
+                            }
+                        guard !email.isEmpty, !password.isEmpty, !username.isEmpty else {
+                            print("Boş alan bırakma")
+                            return
+                        }
                         
+                        Auth.auth().createUser(withEmail: email, password: password) { result, error in
+                            if let error = error {
+                                print(error.localizedDescription)
+                                return
+                            }
+                           
+                            var ref : DocumentReference! = nil
+                            guard let uid = result?.user.uid else { return }
+                            let myDictionary : [String : Any] = ["username" : username, "email" : email,"userid":uid]
+                            
+                            ref = self.db.collection("Users").addDocument(data :myDictionary ,completion: { error in
+                                if error != nil {
+                                    print(error?.localizedDescription)
+                                }else {
+                                    print("Firestore kayıt başarılı")
+                                    DispatchQueue.main.async {
+                                           dismiss()
+                                       }
+                                }
+                            })
+                            
+                            
+
+                        }
+
                     } label: {
+
                         Text("Üye Ol")
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -61,6 +97,7 @@ struct RegisterView: View {
                             .foregroundColor(.white)
                             .cornerRadius(14)
                     }
+                    
 
                     Button {
                         goLogin()

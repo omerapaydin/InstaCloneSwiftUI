@@ -13,9 +13,8 @@ struct ContentView: View {
     @State private var email = ""
     @State private var password = ""
     
-    init() {
-            FirebaseApp.configure()
-        }
+  
+  
     var body: some View {
         NavigationStack {
 
