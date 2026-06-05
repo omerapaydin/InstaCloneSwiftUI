@@ -11,94 +11,107 @@ import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 
+
 struct HomePage: View {
 
     @State private var showUploadView = false
     @State private var selectedImage: UIImage?
     @EnvironmentObject var auth: AuthViewModel
-
+    @StateObject var vm = PostViewModel()
 
     var body: some View {
         NavigationStack {
+
             ScrollView(showsIndicators: false) {
 
                 LazyVStack(spacing: 20) {
 
-                    VStack(alignment: .leading, spacing: 12) {
+                    ForEach(vm.posts) { post in
 
-                        HStack(spacing: 10) {
-                            Circle()
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 38, height: 38)
+                        VStack(alignment: .leading, spacing: 12) {
 
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("root")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
+                            // HEADER
+                            HStack(spacing: 10) {
 
-                                Text("2h ago")
-                                    .font(.caption)
+                                Circle()
+                                    .fill(Color.gray.opacity(0.3))
+                                    .frame(width: 38, height: 38)
+
+                                VStack(alignment: .leading, spacing: 2) {
+
+                                    Text(post.username)
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+
+                                    Text("2h ago")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "ellipsis")
                                     .foregroundColor(.gray)
                             }
 
-                            Spacer()
+                            if let selectedImage {
+                                                     Image(uiImage: selectedImage)
+                                                         .resizable()
+                                                         .scaledToFill()
+                                                         .frame(height: 280)
+                                                         .frame(maxWidth: .infinity)
+                                                         .clipped()
+                                                         .cornerRadius(14)
+                                                 } else {
+                                                     Image(systemName: "photo")
+                                                         .resizable()
+                                                         .scaledToFill()
+                                                         .frame(height: 280)
+                                                         .frame(maxWidth: .infinity)
+                                                         .clipped()
+                                                         .background(Color.gray.opacity(0.15))
+                                                         .cornerRadius(14)
+                                                 }
 
-                            Image(systemName: "ellipsis")
-                                .foregroundColor(.gray)
-                        }
+                         
+                            Text(post.description)
+                                .font(.headline)
 
                         
-                        if let selectedImage {
-                            Image(uiImage: selectedImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(height: 280)
-                                .frame(maxWidth: .infinity)
-                                .clipped()
-                                .cornerRadius(14)
-                        } else {
-                            Image(systemName: "photo")
-                                .resizable()
-                                .scaledToFill()
-                                .frame(height: 280)
-                                .frame(maxWidth: .infinity)
-                                .clipped()
-                                .background(Color.gray.opacity(0.15))
-                                .cornerRadius(14)
+                            HStack(spacing: 18) {
+
+                                Button { } label: {
+                                    Image(systemName: "heart")
+                                        .font(.system(size: 20))
+                                    Text("0")
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                }
+
+                                Button { } label: {
+                                    Image(systemName: "message")
+                                        .font(.system(size: 20))
+                                }
+
+                                Button { } label: {
+                                    Image(systemName: "paperplane")
+                                        .font(.system(size: 20))
+                                }
+
+                                Spacer()
+                            }
+                            .foregroundColor(.black)
                         }
-
-                        HStack(spacing: 18) {
-
-                            Button { } label: {
-                                Image(systemName: "heart")
-                                    .font(.system(size: 20))
-                                Text("125")
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
-                            }
-
-                            Button { } label: {
-                                Image(systemName: "message")
-                                    .font(.system(size: 20))
-                            }
-
-                            Button { } label: {
-                                Image(systemName: "paperplane")
-                                    .font(.system(size: 20))
-                            }
-
-                            Spacer()
-                        }
-                        .foregroundColor(.black)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(18)
+                        .shadow(color: .black.opacity(0.06), radius: 8)
+                        .padding(.horizontal)
                     }
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(18)
-                    .shadow(color: .black.opacity(0.06), radius: 8)
-                    .padding(.horizontal)
                 }
                 .padding(.top, 10)
             }
+
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Instagram")
             .navigationBarTitleDisplayMode(.inline)
@@ -123,13 +136,17 @@ struct HomePage: View {
                     }
                 }
             }
-         
+
             .sheet(isPresented: $showUploadView) {
                 UploadPostView(selectedImage: $selectedImage)
             }
         }
+        .onAppear {
+            vm.fetchPosts()
+        }
     }
 }
+
 
 
 

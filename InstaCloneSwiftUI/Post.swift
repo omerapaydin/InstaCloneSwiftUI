@@ -6,3 +6,9 @@
 //
 
 import Foundation
+struct Post: Identifiable {
+    let id: String
+    let description: String
+    let userid: String
+    let username: String
+}
