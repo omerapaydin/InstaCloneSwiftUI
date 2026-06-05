@@ -7,12 +7,16 @@
 
 import SwiftUI
 import PhotosUI
-
+import Firebase
+import FirebaseAuth
+import FirebaseFirestore
 
 struct HomePage: View {
 
     @State private var showUploadView = false
     @State private var selectedImage: UIImage?
+    @EnvironmentObject var auth: AuthViewModel
+
 
     var body: some View {
         NavigationStack {
@@ -101,15 +105,16 @@ struct HomePage: View {
 
             .toolbar {
 
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
+                        auth.logout()
                     } label: {
-                        Image(systemName: "camera")
+                        Image(systemName: "rectangle.portrait.and.arrow.right")
                             .font(.title3)
                     }
                 }
 
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         showUploadView.toggle()
                     } label: {
@@ -118,7 +123,6 @@ struct HomePage: View {
                     }
                 }
             }
-
          
             .sheet(isPresented: $showUploadView) {
                 UploadPostView(selectedImage: $selectedImage)
@@ -175,6 +179,42 @@ struct UploadPostView: View {
                 Button {
                     print("Caption: \(caption)")
                     print("Image: \(String(describing: selectedImage))")
+                    
+                    
+                    
+                    guard let uid = Auth.auth().currentUser?.uid else { return }
+
+                        let db = Firestore.firestore()
+
+                        let myPost: [String: Any] = [
+
+                            "description": caption,
+
+                            "timestamp": FieldValue.serverTimestamp(),
+
+                            "userid": uid
+
+                        ]
+
+                        db.collection("Posts").addDocument(data: myPost) { error in
+
+                            if let error = error {
+
+                                print("Post error: \(error.localizedDescription)")
+
+                            } else {
+
+                                print("Post uploaded successfully")
+
+                                dismiss()
+
+                            }
+
+                        }
+                    
+                    
+                    
+                    
 
                 } label: {
                     Text("Paylaş")
