@@ -43,7 +43,7 @@ struct HomePage: View {
                                 .foregroundColor(.gray)
                         }
 
-                        // ✅ SEÇİLEN FOTO BURADA GÖRÜNÜR
+                        
                         if let selectedImage {
                             Image(uiImage: selectedImage)
                                 .resizable()
@@ -119,13 +119,17 @@ struct HomePage: View {
                 }
             }
 
-            // ✅ FOTO BURADAN GELİYOR
+         
             .sheet(isPresented: $showUploadView) {
                 UploadPostView(selectedImage: $selectedImage)
             }
         }
     }
 }
+
+
+
+
 
 struct UploadPostView: View {
 
@@ -134,36 +138,49 @@ struct UploadPostView: View {
     @Binding var selectedImage: UIImage?
 
     @State private var selectedItem: PhotosPickerItem?
+    @State private var caption: String = ""
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 25) {
+            VStack(spacing: 20) {
 
-                if let selectedImage {
-                    Image(uiImage: selectedImage)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 250)
-                        .clipped()
-                        .cornerRadius(12)
-                } else {
-                    Image(systemName: "photo.badge.plus")
-                        .font(.system(size: 80))
-                        .foregroundColor(.black)
+                
+                PhotosPicker(
+                    selection: $selectedItem,
+                    matching: .images
+                ) {
+                    if let selectedImage {
+                        Image(uiImage: selectedImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 250)
+                            .clipped()
+                            .cornerRadius(12)
+                    } else {
+                        Image(systemName: "photo.badge.plus")
+                            .font(.system(size: 80))
+                            .foregroundColor(.black)
+                    }
                 }
 
                 Text("Yeni Gönderi")
                     .font(.title2)
                     .fontWeight(.bold)
 
-                PhotosPicker(
-                    selection: $selectedItem,
-                    matching: .images
-                ) {
-                    Text("Fotoğraf Seç")
+                TextField("Bir açıklama yaz...", text: $caption)
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(10)
+
+                Button {
+                    print("Caption: \(caption)")
+                    print("Image: \(String(describing: selectedImage))")
+
+                } label: {
+                    Text("Paylaş")
                         .foregroundColor(.white)
-                        .padding()
                         .frame(maxWidth: .infinity)
+                        .padding()
                         .background(Color.black)
                         .cornerRadius(10)
                 }
@@ -197,6 +214,7 @@ struct UploadPostView: View {
         .tint(.black)
     }
 }
+
 #Preview {
     HomePage()
 }
